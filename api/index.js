@@ -29,14 +29,10 @@ async function getAcquiredToken() {
     return data.access_token;
 }
 
-// Create payment link endpoint
-app.post('/api/create-checkout', async (req, res) => {
+// Function to create or get customer
+async function createCustomer(token, customerData) {
     try {
-        const { product, amount } = req.body;
-        
-        const token = await getAcquiredToken();
-        
-        const response = await fetch(`${ACQUIRED_API_URL}/v1/payment-links`, {
+        const response = await fetch(`${ACQUIRED_API_URL}/v1/customers`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -44,33 +40,88 @@ app.post('/api/create-checkout', async (req, res) => {
                 'company_id': ACQUIRED_COMPANY_ID
             },
             body: JSON.stringify({
-                transaction: {
-                    currency: 'gbp',
-                    moto: false,
-                    capture: true,
-                    order_id: `ORDER-${Date.now()}`,
-                    amount: amount
-                },
-                tds: {
-                    is_active: true,
-                    challenge_preference: 'challenge_preferred'
-                },
-                is_recurring: false,
-                count_retry: 3,
-                expires_in: 259200
+                customer: {
+                    first_name: customerData.first_name,
+                    last_name: customerData.last_name,
+                    email: customerData.email,
+                    phone: customerData.phone
+                }
             })
+        });
+        
+        const data = await response.json();
+        console.log('Customer created:', data);
+        
+        return data.customer_id;
+    } catch (error) {
+        console.error('Error creating customer:', error);
+        throw error;
+    }
+}
+
+// Create payment link endpoint
+app.post('/api/create-checkout', async (req, res) => {
+    try {
+        const { product, amount, customer } = req.body;
+        
+        // Get Bearer token
+        const token = await getAcquiredToken();
+        
+        // Create customer first
+        let customerId = null;
+        if (customer) {
+            customerId = await createCustomer(token, customer);
+            console.log('Customer ID:', customerId);
+        }
+        
+        // Create payment link with customer_id
+        const paymentLinkBody = {
+            transaction: {
+                currency: 'gbp',
+                moto: false,
+                capture: true,
+                order_id: `ORDER-${Date.now()}`,
+                amount: amount
+            },
+            tds: {
+                is_active: true,
+                challenge_preference: 'challenge_preferred'
+            },
+            is_recurring: false,
+            count_retry: 3,
+            expires_in: 259200
+        };
+
+        // Add customer_id if we have one
+        if (customerId) {
+            paymentLinkBody.customer_id = customerId;
+        }
+
+        const response = await fetch(`${ACQUIRED_API_URL}/v1/payment-links`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'company_id': ACQUIRED_COMPANY_ID
+            },
+            body: JSON.stringify(paymentLinkBody)
         });
         
         const data = await response.json();
         
         if (data.link_id) {
             const checkoutUrl = `https://test-pay.acquired.com/v1/${data.link_id}`;
-            res.json({ success: true, checkoutUrl });
+            res.json({ 
+                success: true, 
+                checkoutUrl,
+                customer_id: customerId 
+            });
         } else {
             res.status(400).json({ success: false, error: data });
         }
         
     } catch (error) {
+        console.error('Checkout error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
