@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Football Shirts</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000000;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Futuristic grid background */
+        body:before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            padding: 20px;
+        }
+
+        .products {
+            display: flex;
+            gap: 80px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product {
+            animation: fadeIn 1s ease;
+        }
+
+        .product-image {
+            width: 400px;
+            height: 400px;
+            object-fit: contain;
+            background: transparent;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .product-content {
+            text-align: center;
+        }
+
+        button {
+            width: 300px;
+            background: transparent;
+            color: #00ff41;
+            padding: 18px;
+            border: 2px solid #00ff41;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #00ff41;
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        button:hover:before {
+            left: 0;
+        }
+
+        button:hover {
+            color: #000;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.6);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .products {
+                flex-direction: column;
+                gap: 40px;
+            }
+        }
+    </style>
+    <script>
+        async function checkout(product) {
+            const amounts = {
+                'manutd': 6500,
+                'reading': 4500
+            };
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/create-checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        product: product,
+                        amount: amounts[product]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = data.checkoutUrl;
+                } else {
+                    alert('Error creating checkout: ' + JSON.stringify(data.error));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="products">
+            <div class="product">
+                <img src="images/manutd.jpg" alt="Manchester United Shirt" class="product-image">
+                <div class="product-content">
+                    <button onclick="checkout('manutd')">Buy Now</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <img src="images/reading.jpg" alt="Reading FC Shirt" class="product-image">
+                <div class="product-content">
+                    <button onclick="checkout('reading')">Buy Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

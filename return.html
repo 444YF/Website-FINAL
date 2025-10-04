@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Result</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        body:before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            padding: 40px;
+        }
+
+        .icon {
+            width: 100px;
+            height: 100px;
+            border: 3px solid #00ff41;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: pulse 2s infinite;
+        }
+
+        .icon.success {
+            border-color: #00ff41;
+        }
+
+        .icon.success:after {
+            content: '✓';
+            font-size: 60px;
+            color: #00ff41;
+        }
+
+        .icon.failure {
+            border-color: #ff0041;
+        }
+
+        .icon.failure:after {
+            content: '✕';
+            font-size: 60px;
+            color: #ff0041;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        h1.success {
+            color: #00ff41;
+            text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+
+        h1.failure {
+            color: #ff0041;
+            text-shadow: 0 0 20px rgba(255, 0, 65, 0.5);
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.8;
+        }
+
+        p.success {
+            color: #00ff41;
+        }
+
+        p.failure {
+            color: #ff0041;
+        }
+
+        button {
+            background: transparent;
+            color: #00ff41;
+            padding: 15px 40px;
+            border: 2px solid #00ff41;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #00ff41;
+            color: #000;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.6);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(0, 255, 65, 0.8);
+            }
+        }
+
+        .icon.failure {
+            animation: pulseRed 2s infinite;
+        }
+
+        @keyframes pulseRed {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 0, 65, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 0, 65, 0.8);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="content">
+        <!-- Content will be injected by JavaScript -->
+    </div>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+
+        const content = document.getElementById('content');
+
+        if (status === 'success') {
+            // Success content
+            content.innerHTML = `
+                <div class="icon success"></div>
+                <h1 class="success">PAYMENT SUCCESSFUL!</h1>
+                <p class="success">Thank you for your purchase. Your order has been confirmed.</p>
+                <button onclick="window.location.href='/'">Back to Shop</button>
+            `;
+        } else {
+            // Failure content
+            content.innerHTML = `
+                <div class="icon failure"></div>
+                <h1 class="failure">PAYMENT FAILED</h1>
+                <p class="failure">Your payment could not be processed. Please try again.</p>
+                <button onclick="window.location.href='/'">Back to Shop</button>
+            `;
+        }
+    </script>
+</body>
+</html>
