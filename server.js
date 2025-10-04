@@ -53,7 +53,7 @@ app.post('/api/create-checkout', async (req, res) => {
                     moto: false,
                     capture: true,
                     order_id: `ORDER-${Date.now()}`,
-                    amount: amount
+                    amount: 100
                 },
                 tds: {
                     is_active: true,
