@@ -29,7 +29,7 @@ async function getAcquiredToken() {
     return data.access_token;
 }
 
-// Function to create or get customer
+// Function to create customer
 async function createCustomer(token, customerData) {
     try {
         const response = await fetch(`${ACQUIRED_API_URL}/v1/customers`, {
@@ -39,20 +39,18 @@ async function createCustomer(token, customerData) {
                 'Content-Type': 'application/json',
                 'company_id': ACQUIRED_COMPANY_ID
             },
-            body: JSON.stringify({
-                customer: {
-                    first_name: customerData.first_name,
-                    last_name: customerData.last_name,
-                    email: customerData.email,
-                    phone: customerData.phone
-                }
-            })
+            body: JSON.stringify(customerData)
         });
         
         const data = await response.json();
-        console.log('Customer created:', data);
+        console.log('Customer API Response:', data);
         
-        return data.customer_id;
+        if (data.customer_id) {
+            return data.customer_id;
+        } else {
+            console.error('No customer_id in response:', data);
+            throw new Error('Failed to create customer: ' + JSON.stringify(data));
+        }
     } catch (error) {
         console.error('Error creating customer:', error);
         throw error;
@@ -64,6 +62,8 @@ app.post('/api/create-checkout', async (req, res) => {
     try {
         const { product, amount, customer } = req.body;
         
+        console.log('Received checkout request:', { product, amount, customer });
+        
         // Get Bearer token
         const token = await getAcquiredToken();
         
@@ -71,7 +71,7 @@ app.post('/api/create-checkout', async (req, res) => {
         let customerId = null;
         if (customer) {
             customerId = await createCustomer(token, customer);
-            console.log('Customer ID:', customerId);
+            console.log('Created Customer ID:', customerId);
         }
         
         // Create payment link with customer_id
@@ -97,6 +97,8 @@ app.post('/api/create-checkout', async (req, res) => {
             paymentLinkBody.customer_id = customerId;
         }
 
+        console.log('Creating payment link with:', paymentLinkBody);
+
         const response = await fetch(`${ACQUIRED_API_URL}/v1/payment-links`, {
             method: 'POST',
             headers: {
@@ -108,6 +110,7 @@ app.post('/api/create-checkout', async (req, res) => {
         });
         
         const data = await response.json();
+        console.log('Payment link response:', data);
         
         if (data.link_id) {
             const checkoutUrl = `https://test-pay.acquired.com/v1/${data.link_id}`;

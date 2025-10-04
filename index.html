@@ -129,6 +129,7 @@
             background-color: rgba(0, 0, 0, 0.9);
             align-items: center;
             justify-content: center;
+            overflow-y: auto;
         }
 
         .modal.show {
@@ -140,9 +141,12 @@
             border: 2px solid #00ff41;
             border-radius: 15px;
             padding: 40px;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
             box-shadow: 0 0 50px rgba(0, 255, 65, 0.4);
+            margin: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-header {
@@ -156,8 +160,37 @@
             text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
         }
 
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+        }
+
+        .form-section:last-of-type {
+            border-bottom: none;
+        }
+
+        .form-section h3 {
+            color: #00ff41;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
         }
 
         .form-group label {
@@ -169,7 +202,8 @@
             letter-spacing: 1px;
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%;
             padding: 12px;
             background: rgba(0, 0, 0, 0.5);
@@ -179,7 +213,8 @@
             font-size: 1rem;
         }
 
-        .form-group input:focus {
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
         }
@@ -230,6 +265,12 @@
                 gap: 40px;
             }
         }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -258,22 +299,74 @@
                 <h2>Customer Information</h2>
             </div>
             <form id="customerForm">
-                <div class="form-group">
-                    <label>First Name *</label>
-                    <input type="text" id="firstName" required placeholder="John">
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h3>Personal Details</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name *</label>
+                            <input type="text" id="firstName" required placeholder="John">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name *</label>
+                            <input type="text" id="lastName" required placeholder="Doe">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Birth *</label>
+                        <input type="date" id="dob" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Last Name *</label>
-                    <input type="text" id="lastName" required placeholder="Doe">
+
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <h3>Contact Details</h3>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="email" required placeholder="john@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="tel" id="phone" required placeholder="7700900000">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" id="email" required placeholder="john@example.com">
+
+                <!-- Billing Address -->
+                <div class="form-section">
+                    <h3>Billing Address</h3>
+                    <div class="form-group">
+                        <label>Address Line 1 *</label>
+                        <input type="text" id="addressLine1" required placeholder="152 Aldgate Drive">
+                    </div>
+                    <div class="form-group">
+                        <label>Address Line 2</label>
+                        <input type="text" id="addressLine2" placeholder="Apartment, suite, etc.">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City *</label>
+                            <input type="text" id="city" required placeholder="London">
+                        </div>
+                        <div class="form-group">
+                            <label>Postcode *</label>
+                            <input type="text" id="postcode" required placeholder="E1 7RT">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Country *</label>
+                        <select id="country" required>
+                            <option value="gb">United Kingdom</option>
+                            <option value="us">United States</option>
+                            <option value="ca">Canada</option>
+                            <option value="au">Australia</option>
+                            <option value="de">Germany</option>
+                            <option value="fr">France</option>
+                            <option value="es">Spain</option>
+                            <option value="it">Italy</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Phone</label>
-                    <input type="tel" id="phone" placeholder="+44 7700 900000">
-                </div>
+
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" onclick="closeCustomerForm()">Cancel</button>
                     <button type="submit" id="submitBtn">Continue to Payment</button>
@@ -308,11 +401,29 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Processing...';
 
+            const phone = document.getElementById('phone').value;
+
             const customerData = {
                 first_name: document.getElementById('firstName').value,
                 last_name: document.getElementById('lastName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value || undefined
+                dob: document.getElementById('dob').value,
+                billing: {
+                    email: document.getElementById('email').value,
+                    phone: {
+                        country_code: '44',
+                        number: phone
+                    },
+                    address: {
+                        line_1: document.getElementById('addressLine1').value,
+                        line_2: document.getElementById('addressLine2').value || undefined,
+                        city: document.getElementById('city').value,
+                        postcode: document.getElementById('postcode').value,
+                        country_code: document.getElementById('country').value
+                    }
+                },
+                shipping: {
+                    address_match: true
+                }
             };
 
             try {
