@@ -1,13 +1,28 @@
 module.exports = (req, res) => {
-    // Handle both GET and POST
-    const status = req.query.status || req.body?.status || 'failed';
+    // Get all query parameters and body data
+    const queryParams = req.query;
+    const bodyData = req.body;
     
-    // Log the data we received
+    // Log everything we receive
     console.log('Return URL called:', {
         method: req.method,
-        query: req.query,
-        body: req.body
+        query: queryParams,
+        body: bodyData,
+        url: req.url
     });
+    
+    // Try to determine status from various sources
+    const status = queryParams.status || 
+                   bodyData?.status || 
+                   queryParams.transaction_status ||
+                   bodyData?.transaction_status ||
+                   'unknown';
+    
+    console.log('Determined status:', status);
+    
+    // Determine if this should be treated as success
+    // For Pay By Bank, 'pending' is also a valid state (waiting for settlement)
+    const isSuccess = ['success', 'authorized', 'pending', 'settled'].includes(status.toLowerCase());
     
     // Send HTML response with the success/failure page
     res.setHeader('Content-Type', 'text/html');
@@ -78,6 +93,15 @@ module.exports = (req, res) => {
             color: #00ff41;
         }
 
+        .icon.pending {
+            border-color: #ffa500;
+        }
+
+        .icon.pending:after {
+            content: '⏳';
+            font-size: 60px;
+        }
+
         .icon.failure {
             border-color: #ff0041;
         }
@@ -98,6 +122,11 @@ module.exports = (req, res) => {
             text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
         }
 
+        h1.pending {
+            color: #ffa500;
+            text-shadow: 0 0 20px rgba(255, 165, 0, 0.5);
+        }
+
         h1.failure {
             color: #ff0041;
             text-shadow: 0 0 20px rgba(255, 0, 65, 0.5);
@@ -113,8 +142,18 @@ module.exports = (req, res) => {
             color: #00ff41;
         }
 
+        p.pending {
+            color: #ffa500;
+        }
+
         p.failure {
             color: #ff0041;
+        }
+
+        .status-info {
+            color: rgba(0, 255, 65, 0.6);
+            font-size: 0.9rem;
+            margin-top: 20px;
         }
 
         button {
@@ -158,21 +197,42 @@ module.exports = (req, res) => {
                 box-shadow: 0 0 40px rgba(255, 0, 65, 0.8);
             }
         }
+
+        .icon.pending {
+            animation: pulseOrange 2s infinite;
+        }
+
+        @keyframes pulseOrange {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 165, 0, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 165, 0, 0.8);
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        ${status === 'success' ? `
-            <div class="icon success"></div>
-            <h1 class="success">PAYMENT SUCCESSFUL!</h1>
-            <p class="success">Thank you for your purchase. Your order has been confirmed.</p>
-            <button onclick="window.location.href='/'">Back to Shop</button>
-        ` : `
+        ${isSuccess ? 
+            (status.toLowerCase() === 'pending' ? `
+                <div class="icon pending"></div>
+                <h1 class="pending">PAYMENT PENDING</h1>
+                <p class="pending">Your payment is being processed. You'll receive confirmation once it's complete.</p>
+                <p class="status-info">Status: ${status}</p>
+            ` : `
+                <div class="icon success"></div>
+                <h1 class="success">PAYMENT SUCCESSFUL!</h1>
+                <p class="success">Thank you for your purchase. Your order has been confirmed.</p>
+                <p class="status-info">Status: ${status}</p>
+            `)
+        : `
             <div class="icon failure"></div>
             <h1 class="failure">PAYMENT FAILED</h1>
             <p class="failure">Your payment could not be processed. Please try again.</p>
-            <button onclick="window.location.href='/'">Back to Shop</button>
+            <p class="status-info">Status: ${status}</p>
         `}
+        <button onclick="window.location.href='/'">Back to Shop</button>
     </div>
 </body>
 </html>
