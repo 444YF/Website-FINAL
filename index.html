@@ -101,6 +101,7 @@
             gap: 80px;
             align-items: center;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .product {
@@ -212,13 +213,21 @@
                     <button onclick="checkout('reading')">Buy Now</button>
                 </div>
             </div>
+
+            <div class="product">
+                <div class="product-content">
+                    <h3 style="color: #00ff41; text-align: center; margin-bottom: 80px; font-size: 1.8rem; text-shadow: 0 0 10px rgba(0, 255, 65, 0.5); margin-top: 160px;">PBB SETTLED</h3>
+                    <button onclick="checkout('pbb_settled')">Buy Now</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         const amounts = {
             'manutd': 1000,
-            'reading': 1000
+            'reading': 1000,
+            'pbb_settled': 123  // £1.23 in pence
         };
 
         // Check if user is logged in
