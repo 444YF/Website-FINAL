@@ -1,30 +1,18 @@
 module.exports = (req, res) => {
-    // Get all query parameters and body data
-    const queryParams = req.query;
-    const bodyData = req.body;
+    // Get transaction details from query params
+    const transactionId = req.query.transaction_id || req.body?.transaction_id;
+    const orderId = req.query.order_id || req.body?.order_id;
     
-    // Log everything we receive
+    // Log what we received
     console.log('Return URL called:', {
         method: req.method,
-        query: queryParams,
-        body: bodyData,
-        url: req.url
+        query: req.query,
+        body: req.body,
+        transaction_id: transactionId,
+        order_id: orderId
     });
     
-    // Try to determine status from various sources
-    const status = queryParams.status || 
-                   bodyData?.status || 
-                   queryParams.transaction_status ||
-                   bodyData?.transaction_status ||
-                   'unknown';
-    
-    console.log('Determined status:', status);
-    
-    // Determine if this should be treated as success
-    // For Pay By Bank, 'pending' is also a valid state (waiting for settlement)
-    const isSuccess = ['success', 'authorized', 'pending', 'settled'].includes(status.toLowerCase());
-    
-    // Send HTML response with the success/failure page
+    // Send processing page that will poll for status
     res.setHeader('Content-Type', 'text/html');
     res.status(200).send(`
 <!DOCTYPE html>
@@ -32,7 +20,7 @@ module.exports = (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Result</title>
+    <title>Processing Payment</title>
     <style>
         * {
             margin: 0;
@@ -71,16 +59,55 @@ module.exports = (req, res) => {
             padding: 40px;
         }
 
+        .spinner {
+            width: 100px;
+            height: 100px;
+            border: 3px solid rgba(0, 255, 65, 0.3);
+            border-top: 3px solid #00ff41;
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        h1 {
+            color: #00ff41;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+
+        p {
+            color: rgba(0, 255, 65, 0.8);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .status-info {
+            color: rgba(0, 255, 65, 0.5);
+            font-size: 0.9rem;
+            margin-top: 30px;
+        }
+
+        /* Success/Failure states */
         .icon {
             width: 100px;
             height: 100px;
             border: 3px solid #00ff41;
             border-radius: 50%;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             margin: 0 auto 30px;
             animation: pulse 2s infinite;
+        }
+
+        .icon.show {
+            display: flex;
         }
 
         .icon.success {
@@ -93,15 +120,6 @@ module.exports = (req, res) => {
             color: #00ff41;
         }
 
-        .icon.pending {
-            border-color: #ffa500;
-        }
-
-        .icon.pending:after {
-            content: '⏳';
-            font-size: 60px;
-        }
-
         .icon.failure {
             border-color: #ff0041;
         }
@@ -112,48 +130,13 @@ module.exports = (req, res) => {
             color: #ff0041;
         }
 
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-
-        h1.success {
-            color: #00ff41;
-            text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
-        }
-
-        h1.pending {
-            color: #ffa500;
-            text-shadow: 0 0 20px rgba(255, 165, 0, 0.5);
-        }
-
         h1.failure {
             color: #ff0041;
             text-shadow: 0 0 20px rgba(255, 0, 65, 0.5);
         }
 
-        p {
-            font-size: 1.2rem;
-            margin-bottom: 40px;
-            opacity: 0.8;
-        }
-
-        p.success {
-            color: #00ff41;
-        }
-
-        p.pending {
-            color: #ffa500;
-        }
-
         p.failure {
             color: #ff0041;
-        }
-
-        .status-info {
-            color: rgba(0, 255, 65, 0.6);
-            font-size: 0.9rem;
-            margin-top: 20px;
         }
 
         button {
@@ -168,6 +151,12 @@ module.exports = (req, res) => {
             text-transform: uppercase;
             letter-spacing: 2px;
             transition: all 0.3s ease;
+            display: none;
+            margin-top: 20px;
+        }
+
+        button.show {
+            display: inline-block;
         }
 
         button:hover {
@@ -197,43 +186,101 @@ module.exports = (req, res) => {
                 box-shadow: 0 0 40px rgba(255, 0, 65, 0.8);
             }
         }
-
-        .icon.pending {
-            animation: pulseOrange 2s infinite;
-        }
-
-        @keyframes pulseOrange {
-            0%, 100% {
-                box-shadow: 0 0 20px rgba(255, 165, 0, 0.5);
-            }
-            50% {
-                box-shadow: 0 0 40px rgba(255, 165, 0, 0.8);
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        ${isSuccess ? 
-            (status.toLowerCase() === 'pending' ? `
-                <div class="icon pending"></div>
-                <h1 class="pending">PAYMENT PENDING</h1>
-                <p class="pending">Your payment is being processed. You'll receive confirmation once it's complete.</p>
-                <p class="status-info">Status: ${status}</p>
-            ` : `
-                <div class="icon success"></div>
-                <h1 class="success">PAYMENT SUCCESSFUL!</h1>
-                <p class="success">Thank you for your purchase. Your order has been confirmed.</p>
-                <p class="status-info">Status: ${status}</p>
-            `)
-        : `
-            <div class="icon failure"></div>
-            <h1 class="failure">PAYMENT FAILED</h1>
-            <p class="failure">Your payment could not be processed. Please try again.</p>
-            <p class="status-info">Status: ${status}</p>
-        `}
-        <button onclick="window.location.href='/'">Back to Shop</button>
+        <div class="spinner" id="spinner"></div>
+        <div class="icon" id="icon"></div>
+        <h1 id="title">PROCESSING PAYMENT</h1>
+        <p id="message">Please wait while we confirm your payment...</p>
+        <p class="status-info" id="statusInfo">Waiting for payment confirmation</p>
+        <button id="backBtn" onclick="window.location.href='/'">Back to Shop</button>
     </div>
+
+    <script>
+        const transactionId = '${transactionId || ''}';
+        const orderId = '${orderId || ''}';
+        let pollCount = 0;
+        const maxPolls = 60; // Poll for up to 60 seconds
+        
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/transaction-status?transaction_id=' + transactionId + '&order_id=' + orderId);
+                const data = await response.json();
+                
+                console.log('Status check:', data);
+                
+                if (data.status) {
+                    const status = data.status.toLowerCase();
+                    
+                    if (status === 'settled' || status === 'captured' || status === 'authorized') {
+                        // Success!
+                        showSuccess();
+                        return true;
+                    } else if (status === 'failed' || status === 'declined' || status === 'cancelled' || status === 'expired') {
+                        // Failed
+                        showFailure(status);
+                        return true;
+                    } else if (status === 'pending') {
+                        // Still pending, keep polling
+                        document.getElementById('statusInfo').textContent = 'Status: Pending - Waiting for bank confirmation';
+                        return false;
+                    }
+                }
+                
+                return false;
+            } catch (error) {
+                console.error('Error checking status:', error);
+                return false;
+            }
+        }
+        
+        function showSuccess() {
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('icon').classList.add('success', 'show');
+            document.getElementById('title').textContent = 'PAYMENT SUCCESSFUL!';
+            document.getElementById('message').textContent = 'Thank you for your purchase. Your order has been confirmed.';
+            document.getElementById('statusInfo').textContent = 'Payment settled';
+            document.getElementById('backBtn').classList.add('show');
+        }
+        
+        function showFailure(status) {
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('icon').classList.add('failure', 'show');
+            document.getElementById('title').textContent = 'PAYMENT FAILED';
+            document.getElementById('title').classList.add('failure');
+            document.getElementById('message').textContent = 'Your payment could not be processed. Please try again.';
+            document.getElementById('message').classList.add('failure');
+            document.getElementById('statusInfo').textContent = 'Status: ' + status;
+            document.getElementById('backBtn').classList.add('show');
+        }
+        
+        function showTimeout() {
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('title').textContent = 'PAYMENT PROCESSING';
+            document.getElementById('message').textContent = 'Your payment is still being processed. Please check your email for confirmation.';
+            document.getElementById('statusInfo').textContent = 'This is taking longer than expected';
+            document.getElementById('backBtn').classList.add('show');
+        }
+        
+        // Start polling
+        const pollInterval = setInterval(async () => {
+            pollCount++;
+            
+            const complete = await checkStatus();
+            
+            if (complete) {
+                clearInterval(pollInterval);
+            } else if (pollCount >= maxPolls) {
+                clearInterval(pollInterval);
+                showTimeout();
+            }
+        }, 1000); // Check every second
+        
+        // Initial check
+        checkStatus();
+    </script>
 </body>
 </html>
     `);

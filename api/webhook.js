@@ -1,12 +1,11 @@
 const express = require('express');
 const app = express();
+const transactionStatusModule = require('./transaction-status.js');
 
-// Use raw body for webhook signature verification
 app.use(express.raw({ type: 'application/json' }));
 
 app.post('/api/webhook', async (req, res) => {
     try {
-        // Parse the webhook payload
         const payload = JSON.parse(req.body.toString());
         
         console.log('🔔 Webhook received:', JSON.stringify(payload, null, 2));
@@ -25,96 +24,58 @@ app.post('/api/webhook', async (req, res) => {
         console.log('Order ID:', orderId);
         console.log('Status:', status);
         
+        // Store the status so the return page can check it
+        if (transactionStatusModule.updateStatus) {
+            transactionStatusModule.updateStatus(transactionId, orderId, status);
+        }
+        
         // Handle different statuses
         if (webhookType === 'status_update') {
             switch(status) {
                 case 'pending':
                     console.log('⏳ Status: PENDING');
-                    console.log('Payment is being processed');
-                    // TODO: Update order status to pending
                     break;
-
                 case 'authorized':
                     console.log('✅ Status: AUTHORIZED');
-                    console.log('Payment has been authorized');
-                    // TODO: Mark order as authorized, prepare for capture
                     break;
-
                 case 'settled':
-                    console.log('💰 Status: SETTLED');
-                    console.log('Payment successfully completed!');
-                    // TODO: Fulfill order, send confirmation email, update inventory
+                    console.log('💰 Status: SETTLED - Payment Complete!');
                     break;
-
                 case 'failed':
                     console.log('❌ Status: FAILED');
-                    console.log('Payment failed');
-                    // TODO: Cancel order, notify customer
                     break;
-
                 case 'declined':
                     console.log('⛔ Status: DECLINED');
-                    console.log('Payment was declined');
-                    // TODO: Cancel order, notify customer to try another payment method
                     break;
-
                 case 'cancelled':
                     console.log('🚫 Status: CANCELLED');
-                    console.log('Payment was cancelled');
-                    // TODO: Cancel order, update order status
                     break;
-
                 case 'expired':
                     console.log('⏰ Status: EXPIRED');
-                    console.log('Payment authorization expired');
-                    // TODO: Cancel order, notify customer
                     break;
-
                 case 'refunded':
                     console.log('💸 Status: REFUNDED');
-                    console.log('Payment has been refunded');
-                    // TODO: Update order status, notify customer
                     break;
-
                 case 'partially_refunded':
                     console.log('💸 Status: PARTIALLY REFUNDED');
-                    console.log('Payment has been partially refunded');
-                    // TODO: Update order with partial refund amount
                     break;
-
                 case 'voided':
                     console.log('🚫 Status: VOIDED');
-                    console.log('Payment authorization was voided');
-                    // TODO: Cancel order
                     break;
-
                 case 'captured':
                     console.log('💰 Status: CAPTURED');
-                    console.log('Payment has been captured');
-                    // TODO: Fulfill order
                     break;
-
                 case 'chargeback':
                     console.log('⚠️ Status: CHARGEBACK');
-                    console.log('A chargeback has been initiated');
-                    // TODO: Alert finance team, gather evidence
                     break;
-
                 case 'error':
                     console.log('⚠️ Status: ERROR');
-                    console.log('An error occurred processing the payment');
-                    // TODO: Log error, notify support team
                     break;
-
                 default:
                     console.log('ℹ️ Unknown status:', status);
-                    console.log('Full body:', body);
             }
-        } else {
-            console.log('ℹ️ Unknown webhook type:', webhookType);
         }
         
-        // Always respond with 200 to acknowledge receipt
         res.status(200).json({ 
             received: true,
             webhook_id: webhookId,
@@ -134,27 +95,10 @@ app.post('/api/webhook', async (req, res) => {
     }
 });
 
-// Health check endpoint
 app.get('/api/webhook', (req, res) => {
     res.json({ 
         status: 'ok',
-        message: 'Webhook endpoint is ready',
-        endpoint: '/api/webhook',
-        supported_statuses: [
-            'pending',
-            'authorized', 
-            'settled',
-            'failed',
-            'declined',
-            'cancelled',
-            'expired',
-            'refunded',
-            'partially_refunded',
-            'voided',
-            'captured',
-            'chargeback',
-            'error'
-        ]
+        message: 'Webhook endpoint is ready'
     });
 });
 
