@@ -1,8 +1,10 @@
 const express = require('express');
 const app = express();
-const transactionStatusModule = require('./transaction-status.js');
 
 app.use(express.raw({ type: 'application/json' }));
+
+// Global storage that persists during function execution
+global.transactionStatuses = global.transactionStatuses || {};
 
 app.post('/api/webhook', async (req, res) => {
     try {
@@ -24,22 +26,35 @@ app.post('/api/webhook', async (req, res) => {
         console.log('Order ID:', orderId);
         console.log('Status:', status);
         
-        // Store the status so the return page can check it
-        if (transactionStatusModule.updateStatus) {
-            transactionStatusModule.updateStatus(transactionId, orderId, status);
+        // Store status in global object
+        const statusData = {
+            status: status,
+            timestamp: new Date().toISOString(),
+            transaction_id: transactionId,
+            order_id: orderId
+        };
+        
+        if (transactionId) {
+            global.transactionStatuses[transactionId] = statusData;
         }
+        if (orderId) {
+            global.transactionStatuses[orderId] = statusData;
+        }
+        
+        console.log('✅ Status stored:', statusData);
+        console.log('Current statuses in memory:', Object.keys(global.transactionStatuses));
         
         // Handle different statuses
         if (webhookType === 'status_update') {
             switch(status) {
+                case 'settled':
+                    console.log('💰 Status: SETTLED - Payment Complete!');
+                    break;
                 case 'pending':
                     console.log('⏳ Status: PENDING');
                     break;
                 case 'authorized':
                     console.log('✅ Status: AUTHORIZED');
-                    break;
-                case 'settled':
-                    console.log('💰 Status: SETTLED - Payment Complete!');
                     break;
                 case 'failed':
                     console.log('❌ Status: FAILED');
@@ -53,26 +68,8 @@ app.post('/api/webhook', async (req, res) => {
                 case 'expired':
                     console.log('⏰ Status: EXPIRED');
                     break;
-                case 'refunded':
-                    console.log('💸 Status: REFUNDED');
-                    break;
-                case 'partially_refunded':
-                    console.log('💸 Status: PARTIALLY REFUNDED');
-                    break;
-                case 'voided':
-                    console.log('🚫 Status: VOIDED');
-                    break;
-                case 'captured':
-                    console.log('💰 Status: CAPTURED');
-                    break;
-                case 'chargeback':
-                    console.log('⚠️ Status: CHARGEBACK');
-                    break;
-                case 'error':
-                    console.log('⚠️ Status: ERROR');
-                    break;
                 default:
-                    console.log('ℹ️ Unknown status:', status);
+                    console.log('ℹ️ Status:', status);
             }
         }
         
@@ -83,6 +80,7 @@ app.post('/api/webhook', async (req, res) => {
             status: status,
             transaction_id: transactionId,
             order_id: orderId,
+            stored: true,
             processed_at: new Date().toISOString()
         });
         
@@ -98,7 +96,8 @@ app.post('/api/webhook', async (req, res) => {
 app.get('/api/webhook', (req, res) => {
     res.json({ 
         status: 'ok',
-        message: 'Webhook endpoint is ready'
+        message: 'Webhook endpoint is ready',
+        statuses_in_memory: Object.keys(global.transactionStatuses || {})
     });
 });
 
