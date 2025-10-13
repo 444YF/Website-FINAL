@@ -1,10 +1,8 @@
 const express = require('express');
+const { kv } = require('@vercel/kv');
 const app = express();
 
 app.use(express.raw({ type: 'application/json' }));
-
-// Global storage that persists during function execution
-global.transactionStatuses = global.transactionStatuses || {};
 
 app.post('/api/webhook', async (req, res) => {
     try {
@@ -26,7 +24,7 @@ app.post('/api/webhook', async (req, res) => {
         console.log('Order ID:', orderId);
         console.log('Status:', status);
         
-        // Store status in global object
+        // Store status in Vercel KV with 24 hour expiry
         const statusData = {
             status: status,
             timestamp: new Date().toISOString(),
@@ -35,14 +33,14 @@ app.post('/api/webhook', async (req, res) => {
         };
         
         if (transactionId) {
-            global.transactionStatuses[transactionId] = statusData;
-        }
-        if (orderId) {
-            global.transactionStatuses[orderId] = statusData;
+            await kv.set(`transaction:${transactionId}`, JSON.stringify(statusData), { ex: 86400 });
+            console.log('✅ Stored status for transaction:', transactionId);
         }
         
-        console.log('✅ Status stored:', statusData);
-        console.log('Current statuses in memory:', Object.keys(global.transactionStatuses));
+        if (orderId) {
+            await kv.set(`order:${orderId}`, JSON.stringify(statusData), { ex: 86400 });
+            console.log('✅ Stored status for order:', orderId);
+        }
         
         // Handle different statuses
         if (webhookType === 'status_update') {
@@ -96,8 +94,7 @@ app.post('/api/webhook', async (req, res) => {
 app.get('/api/webhook', (req, res) => {
     res.json({ 
         status: 'ok',
-        message: 'Webhook endpoint is ready',
-        statuses_in_memory: Object.keys(global.transactionStatuses || {})
+        message: 'Webhook endpoint is ready with KV storage'
     });
 });
 
