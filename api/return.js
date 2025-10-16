@@ -189,7 +189,7 @@ module.exports = (req, res) => {
         <div class="spinner" id="spinner"></div>
         <div class="icon" id="icon"></div>
         <h1 id="title">PROCESSING PAYMENT</h1>
-        <p id="message">Waiting for payment confirmation from your bank...</p>
+        <p id="message">Waiting for payment confirmation...</p>
         <p class="status-info" id="statusInfo">This may take a few moments</p>
         <button id="backBtn" onclick="window.location.href='/'">Back to Shop</button>
     </div>
@@ -198,6 +198,18 @@ module.exports = (req, res) => {
         const transactionId = '${transactionId || ''}';
         const orderId = '${orderId || ''}';
         let pollCount = 0;
+        
+        function isSuccessForProduct(status, product) {
+            const statusLower = status.toLowerCase();
+            
+            // For PBB_SETTLED product, only accept "settled"
+            if (product === 'pbb_settled') {
+                return statusLower === 'settled';
+            }
+            
+            // For other products (manutd, reading), accept "successful"
+            return statusLower === 'successful';
+        }
         
         async function checkStatus() {
             try {
@@ -208,25 +220,29 @@ module.exports = (req, res) => {
                 
                 console.log('Status check #' + pollCount + ':', data);
                 
-                if (data.status) {
-                    const status = data.status.toLowerCase();
+                if (data.status && data.product) {
+                    const status = data.status;
+                    const product = data.product;
                     
-                    // Only show success on settled
-                    if (status === 'settled') {
-                        console.log('✅ Payment SETTLED!');
+                    console.log('Product:', product, 'Status:', status);
+                    
+                    // Check if this status means success for this product
+                    if (isSuccessForProduct(status, product)) {
+                        console.log('✅ Payment SUCCESS for product:', product);
                         showSuccess();
                         return true;
                     } 
                     // Show failure for these statuses
-                    else if (status === 'failed' || status === 'declined' || status === 'cancelled' || status === 'expired') {
+                    else if (status.toLowerCase() === 'failed' || status.toLowerCase() === 'declined' || status.toLowerCase() === 'cancelled' || status.toLowerCase() === 'expired') {
                         console.log('❌ Payment failed:', status);
                         showFailure(status);
                         return true;
                     } 
-                    // For pending, authorized, or any other status - keep waiting
+                    // For any other status - keep waiting
                     else {
                         console.log('⏳ Still waiting... Status:', status);
-                        document.getElementById('statusInfo').textContent = 'Status: ' + status.toUpperCase() + ' - Waiting for settlement... (Check #' + pollCount + ')';
+                        const waitingFor = product === 'pbb_settled' ? 'SETTLED' : 'SUCCESSFUL';
+                        document.getElementById('statusInfo').textContent = 'Product: ' + product.toUpperCase() + ' | Status: ' + status.toUpperCase() + ' | Waiting for ' + waitingFor + '... (Check #' + pollCount + ')';
                         return false;
                     }
                 }
@@ -246,7 +262,7 @@ module.exports = (req, res) => {
             document.getElementById('spinner').style.display = 'none';
             document.getElementById('icon').classList.add('success', 'show');
             document.getElementById('title').textContent = 'PAYMENT SUCCESSFUL!';
-            document.getElementById('message').textContent = 'Your payment has been confirmed and settled.';
+            document.getElementById('message').textContent = 'Your payment has been confirmed.';
             document.getElementById('statusInfo').textContent = 'Transaction complete';
             document.getElementById('backBtn').classList.add('show');
         }
@@ -262,14 +278,14 @@ module.exports = (req, res) => {
             document.getElementById('backBtn').classList.add('show');
         }
         
-        // Poll every 2 seconds indefinitely until we get settled or failed
+        // Poll every 2 seconds indefinitely
         const pollInterval = setInterval(async () => {
             const complete = await checkStatus();
             
             if (complete) {
                 clearInterval(pollInterval);
             }
-        }, 2000); // Check every 2 seconds
+        }, 2000);
         
         // Initial check immediately
         checkStatus();

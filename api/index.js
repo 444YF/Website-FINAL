@@ -37,6 +37,9 @@ app.post('/api/create-checkout', async (req, res) => {
         // Get Bearer token
         const token = await getAcquiredToken();
         
+        // Include product in order_id so we can identify it later
+        const orderId = `ORDER-${product}-${Date.now()}`;
+        
         // Create payment link
         const response = await fetch(`${ACQUIRED_API_URL}/v1/payment-links`, {
             method: 'POST',
@@ -50,7 +53,7 @@ app.post('/api/create-checkout', async (req, res) => {
                     currency: 'gbp',
                     moto: false,
                     capture: true,
-                    order_id: `ORDER-${Date.now()}`,
+                    order_id: orderId,
                     amount: amount
                 },
                 tds: {
