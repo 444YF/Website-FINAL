@@ -1,301 +1,335 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Football Shirts</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Premium Football Shirts</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #000000;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #000;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        body:before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
-            background-size: 50px 50px;
-            z-index: 0;
-            pointer-events: none;
-        }
+    body:before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      z-index: 0;
+      pointer-events: none;
+    }
 
-        /* Top Navigation */
-        .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 20px;
-            z-index: 100;
-        }
+    /* Top Navigation */
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 20px;
+      z-index: 100;
+    }
 
-        .user-info {
-            color: #00ff41;
-            font-size: 1rem;
-            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
-        }
+    .user-info {
+      color: #00ff41;
+      font-size: 1rem;
+      text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+    }
 
-        .nav-btn {
-            background: transparent;
-            color: #00ff41;
-            padding: 10px 20px;
-            border: 2px solid #00ff41;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
+    .nav-btn {
+      background: transparent;
+      color: #00ff41;
+      padding: 10px 20px;
+      border: 2px solid #00ff41;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
 
-        .nav-btn:hover {
-            background: #00ff41;
-            color: #000;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
-        }
+    .nav-btn:hover {
+      background: #00ff41;
+      color: #000;
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
+    }
 
-        .nav-btn.logout {
-            border-color: #ff0041;
-            color: #ff0041;
-        }
+    .nav-btn.logout {
+      border-color: #ff0041;
+      color: #ff0041;
+    }
 
-        .nav-btn.logout:hover {
-            background: #ff0041;
-            color: #000;
-            box-shadow: 0 0 20px rgba(255, 0, 65, 0.6);
-        }
+    .nav-btn.logout:hover {
+      background: #ff0041;
+      color: #000;
+      box-shadow: 0 0 20px rgba(255, 0, 65, 0.6);
+    }
 
-        .container {
-            position: relative;
-            z-index: 1;
-            padding: 20px;
-        }
+    .container {
+      position: relative;
+      z-index: 1;
+      padding: 20px;
+      width: 100%;
+    }
 
-        .products {
-            display: flex;
-            gap: 80px;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+    /* Products Grid */
+    .products {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 40px;
+      max-width: 1300px;
+      margin: 120px auto 60px auto;
+    }
 
-        .product {
-            animation: fadeIn 1s ease;
-        }
+    .product {
+      width: 350px;
+      text-align: center;
+      background: rgba(0, 255, 65, 0.05);
+      border: 2px solid rgba(0, 255, 65, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      transition: all 0.4s ease;
+      box-shadow: 0 0 0 rgba(0, 255, 65, 0);
+      animation: idleGlow 3s infinite ease-in-out;
+    }
 
-        .product-image {
-            width: 400px;
-            height: 400px;
-            object-fit: contain;
-            background: transparent;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
+    /* Hover Glow + Lift */
+    .product:hover {
+      transform: translateY(-10px);
+      border-color: #00ff41;
+      animation: pulseGlow 1.6s infinite alternate ease-in-out;
+    }
 
-        .product-content {
-            text-align: center;
-        }
+    .product-image {
+      width: 300px;
+      height: 300px;
+      object-fit: contain;
+      background: transparent;
+      margin-bottom: 20px;
+      transition: transform 0.4s ease;
+      animation: softPulse 4s infinite ease-in-out;
+    }
 
-        button {
-            width: 300px;
-            background: transparent;
-            color: #00ff41;
-            padding: 18px;
-            border: 2px solid #00ff41;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.2rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            position: relative;
-            overflow: hidden;
-        }
+    .product:hover .product-image {
+      transform: scale(1.05);
+    }
 
-        button:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: #00ff41;
-            transition: left 0.3s ease;
-            z-index: -1;
-        }
+    .product-content {
+      text-align: center;
+    }
 
-        button:hover:before {
-            left: 0;
-        }
+    button {
+      width: 250px;
+      background: transparent;
+      color: #00ff41;
+      padding: 15px;
+      border: 2px solid #00ff41;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      position: relative;
+      overflow: hidden;
+    }
 
-        button:hover {
-            color: #000;
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.6);
-        }
+    button:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: #00ff41;
+      transition: left 0.3s ease;
+      z-index: -1;
+    }
 
-        button:active {
-            transform: scale(0.98);
-        }
+    button:hover:before {
+      left: 0;
+    }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    button:hover {
+      color: #000;
+      animation: pulseGlow 1.2s infinite alternate ease-in-out;
+    }
 
-        @media (max-width: 1024px) {
-            .products {
-                flex-direction: column;
-                gap: 40px;
-            }
-            
-            .top-nav {
-                padding: 15px 20px;
-                flex-direction: column;
-                align-items: flex-end;
-                gap: 10px;
-            }
-        }
-    </style>
+    button:active {
+      transform: scale(0.98);
+    }
+
+    /* Neon Pulse Animation */
+    @keyframes pulseGlow {
+      from {
+        box-shadow: 0 0 10px rgba(0, 255, 65, 0.4),
+                    0 0 20px rgba(0, 255, 65, 0.2);
+      }
+      to {
+        box-shadow: 0 0 25px rgba(0, 255, 65, 0.8),
+                    0 0 45px rgba(0, 255, 65, 0.4);
+      }
+    }
+
+    /* Soft Ambient Glow (idle state) */
+    @keyframes idleGlow {
+      0%, 100% {
+        box-shadow: 0 0 10px rgba(0, 255, 65, 0.2),
+                    0 0 20px rgba(0, 255, 65, 0.1);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(0, 255, 65, 0.3),
+                    0 0 40px rgba(0, 255, 65, 0.15);
+      }
+    }
+
+    /* Subtle image pulse */
+    @keyframes softPulse {
+      0%, 100% {
+        filter: drop-shadow(0 0 4px rgba(0, 255, 65, 0.4));
+        transform: scale(1);
+      }
+      50% {
+        filter: drop-shadow(0 0 12px rgba(0, 255, 65, 0.6));
+        transform: scale(1.03);
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .products {
+        flex-direction: column;
+        gap: 40px;
+      }
+
+      .top-nav {
+        padding: 15px 20px;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <!-- Top Navigation -->
-    <div class="top-nav">
-        <span id="userInfo" class="user-info" style="display: none;"></span>
-        <a href="/login.html" id="loginBtn" class="nav-btn">Login</a>
-        <a href="/signup.html" id="signupBtn" class="nav-btn">Sign Up</a>
-        <button id="logoutBtn" class="nav-btn logout" style="display: none;">Logout</button>
-    </div>
+  <!-- Top Navigation -->
+  <div class="top-nav">
+    <span id="userInfo" class="user-info" style="display: none;"></span>
+    <a href="/login.html" id="loginBtn" class="nav-btn">Login</a>
+    <a href="/signup.html" id="signupBtn" class="nav-btn">Sign Up</a>
+    <button id="logoutBtn" class="nav-btn logout" style="display: none;">Logout</button>
+  </div>
 
-    <div class="container">
-        <div class="products">
-            <div class="product">
-                <img src="images/manutd.jpg" alt="Manchester United Shirt" class="product-image">
-                <div class="product-content">
-                    <button onclick="checkout('manutd')">Buy Now</button>
-                </div>
-            </div>
-
-            <div class="product">
-                <img src="images/reading.jpg" alt="Reading FC Shirt" class="product-image">
-                <div class="product-content">
-                    <button onclick="checkout('reading')">Buy Now</button>
-                </div>
-            </div>
-
-            <div class="product">
-                <img src="images/pbb.jpg" alt="PBB Settled" class="product-image">
-                <div class="product-content">
-                    <h3 style="color: #00ff41; text-align: center; margin-bottom: 80px; font-size: 1.8rem; text-shadow: 0 0 10px rgba(0, 255, 65, 0.5); margin-top: 160px;"></h3>
-                    <button onclick="checkout">Buy Now</button>
-                </div>
-            </div>
+  <div class="container">
+    <div class="products">
+      <div class="product">
+        <img src="images/manutd.jpg" alt="Manchester United Shirt" class="product-image">
+        <div class="product-content">
+          <button onclick="checkout('manutd')">Buy Now</button>
         </div>
+      </div>
+
+      <div class="product">
+        <img src="images/reading.jpg" alt="Reading FC Shirt" class="product-image">
+        <div class="product-content">
+          <button onclick="checkout('reading')">Buy Now</button>
+        </div>
+      </div>
+
+      <div class="product">
+        <img src="images/pbb.jpg" alt="PBB Settled" class="product-image">
+        <div class="product-content">
+          <button onclick="checkout('pbb_settled')">Buy Now</button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        const amounts = {
-            'manutd': 10,
-            'reading': 10,
-            'pbb_settled': 1.23  // £1.23 in pence
-        };
+  <script>
+    const amounts = {
+      'manutd': 10,
+      'reading': 10,
+      'pbb_settled': 1.23
+    };
 
-        // Check if user is logged in
-        function checkAuth() {
-            const token = localStorage.getItem('authToken');
-            const user = localStorage.getItem('user');
-            
-            if (token && user) {
-                const userData = JSON.parse(user);
-                document.getElementById('userInfo').textContent = `Welcome, ${userData.firstName}!`;
-                document.getElementById('userInfo').style.display = 'block';
-                document.getElementById('loginBtn').style.display = 'none';
-                document.getElementById('signupBtn').style.display = 'none';
-                document.getElementById('logoutBtn').style.display = 'inline-block';
-            } else {
-                document.getElementById('userInfo').style.display = 'none';
-                document.getElementById('loginBtn').style.display = 'inline-block';
-                document.getElementById('signupBtn').style.display = 'inline-block';
-                document.getElementById('logoutBtn').style.display = 'none';
-            }
-        }
+    function checkAuth() {
+      const token = localStorage.getItem('authToken');
+      const user = localStorage.getItem('user');
 
-        // Logout function
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            const token = localStorage.getItem('authToken');
-            
-            if (token) {
-                await fetch('/api/auth/logout', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-            }
-            
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('user');
-            checkAuth();
+      if (token && user) {
+        const userData = JSON.parse(user);
+        document.getElementById('userInfo').textContent = `Welcome, ${userData.firstName}!`;
+        document.getElementById('userInfo').style.display = 'block';
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('signupBtn').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+      } else {
+        document.getElementById('userInfo').style.display = 'none';
+        document.getElementById('loginBtn').style.display = 'inline-block';
+        document.getElementById('signupBtn').style.display = 'inline-block';
+        document.getElementById('logoutBtn').style.display = 'none';
+      }
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
         });
+      }
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      checkAuth();
+    });
 
-        async function checkout(product) {
-            try {
-                const response = await fetch('/api/create-checkout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        product: product,
-                        amount: amounts[product]
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    window.location.href = data.checkoutUrl;
-                } else {
-                    alert('Error creating checkout: ' + JSON.stringify(data.error));
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
+    async function checkout(product) {
+      try {
+        const response = await fetch('/api/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product, amount: amounts[product] })
+        });
+        const data = await response.json();
+        if (data.success) {
+          window.location.href = data.checkoutUrl;
+        } else {
+          alert('Error creating checkout: ' + JSON.stringify(data.error));
         }
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    }
 
-        // Check auth on page load
-        checkAuth();
-    </script>
+    checkAuth();
+  </script>
 </body>
 </html>
