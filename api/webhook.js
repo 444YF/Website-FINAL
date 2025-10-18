@@ -57,8 +57,8 @@ app.post('/api/webhook', async (req, res) => {
         }
         
         // Log status
-        if (status === 'successful') {
-            console.log('✅ Status: SUCCESSFUL');
+        if (status === 'success') {
+            console.log('✅ Status: SUCCESS');
         } else if (status === 'settled') {
             console.log('💰 Status: SETTLED');
         } else {
