@@ -15,26 +15,10 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #000;
       min-height: 100vh;
-      position: relative;
-      overflow-x: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-
-    body:before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image:
-        linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
-      background-size: 50px 50px;
-      z-index: 0;
-      pointer-events: none;
+      overflow-x: hidden;
     }
 
     /* Top Navigation */
@@ -91,10 +75,10 @@
     }
 
     .container {
-      position: relative;
-      z-index: 1;
       padding: 20px;
       width: 100%;
+      position: relative;
+      z-index: 1;
     }
 
     /* Products Grid */
@@ -111,30 +95,24 @@
     .product {
       width: 350px;
       text-align: center;
-      background: rgba(0, 255, 65, 0.05);
-      border: 2px solid rgba(0, 255, 65, 0.3);
-      border-radius: 16px;
       padding: 20px;
+      border-radius: 16px;
       transition: all 0.4s ease;
-      box-shadow: 0 0 0 rgba(0, 255, 65, 0);
-      animation: idleGlow 3s infinite ease-in-out;
     }
 
     /* Hover Glow + Lift */
     .product:hover {
       transform: translateY(-10px);
-      border-color: #00ff41;
-      animation: pulseGlow 1.6s infinite alternate ease-in-out;
+      box-shadow: 0 0 25px rgba(0, 255, 65, 0.6),
+                  0 0 45px rgba(0, 255, 65, 0.3);
     }
 
     .product-image {
       width: 300px;
       height: 300px;
       object-fit: contain;
-      background: transparent;
       margin-bottom: 20px;
       transition: transform 0.4s ease;
-      animation: softPulse 4s infinite ease-in-out;
     }
 
     .product:hover .product-image {
@@ -180,47 +158,11 @@
 
     button:hover {
       color: #000;
-      animation: pulseGlow 1.2s infinite alternate ease-in-out;
+      box-shadow: 0 0 25px rgba(0, 255, 65, 0.8);
     }
 
     button:active {
       transform: scale(0.98);
-    }
-
-    /* Neon Pulse Animation */
-    @keyframes pulseGlow {
-      from {
-        box-shadow: 0 0 10px rgba(0, 255, 65, 0.4),
-                    0 0 20px rgba(0, 255, 65, 0.2);
-      }
-      to {
-        box-shadow: 0 0 25px rgba(0, 255, 65, 0.8),
-                    0 0 45px rgba(0, 255, 65, 0.4);
-      }
-    }
-
-    /* Soft Ambient Glow (idle state) */
-    @keyframes idleGlow {
-      0%, 100% {
-        box-shadow: 0 0 10px rgba(0, 255, 65, 0.2),
-                    0 0 20px rgba(0, 255, 65, 0.1);
-      }
-      50% {
-        box-shadow: 0 0 20px rgba(0, 255, 65, 0.3),
-                    0 0 40px rgba(0, 255, 65, 0.15);
-      }
-    }
-
-    /* Subtle image pulse */
-    @keyframes softPulse {
-      0%, 100% {
-        filter: drop-shadow(0 0 4px rgba(0, 255, 65, 0.4));
-        transform: scale(1);
-      }
-      50% {
-        filter: drop-shadow(0 0 12px rgba(0, 255, 65, 0.6));
-        transform: scale(1.03);
-      }
     }
 
     @media (max-width: 1024px) {
