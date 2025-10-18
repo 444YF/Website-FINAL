@@ -40,16 +40,18 @@ module.exports = async (req, res) => {
             });
         }
         
-        // Create session
+        // Create session with customer_id
         const token = generateToken();
         global.sessions[token] = {
             userId: user.id,
             email: user.email,
             firstName: user.firstName,
-            lastName: user.lastName
+            lastName: user.lastName,
+            customer_id: user.customer_id // Include customer_id in session
         };
         
         console.log('User logged in:', email);
+        console.log('Customer ID:', user.customer_id);
         
         res.json({
             success: true,
@@ -58,7 +60,8 @@ module.exports = async (req, res) => {
                 id: user.id,
                 email: user.email,
                 firstName: user.firstName,
-                lastName: user.lastName
+                lastName: user.lastName,
+                customer_id: user.customer_id
             }
         });
     } catch (error) {
