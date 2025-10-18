@@ -1,27 +1,28 @@
-const { kv } = require('@vercel/kv');
+const Redis = require('ioredis');
+const redis = new Redis(process.env.REDIS_URL || process.env.KV_URL);
 
 module.exports = async (req, res) => {
     const transactionId = req.query.transaction_id;
     const orderId = req.query.order_id;
     
-    console.log('📊 Status check requested:', { transactionId, orderId });
+    console.log('📊 Status check:', { transactionId, orderId });
     
     try {
         let statusData = null;
         
         if (transactionId) {
-            const data = await kv.get(`transaction:${transactionId}`);
+            const data = await redis.get(`transaction:${transactionId}`);
             if (data) {
-                statusData = typeof data === 'string' ? JSON.parse(data) : data;
-                console.log('✅ Found status by transaction ID:', statusData);
+                statusData = JSON.parse(data);
+                console.log('✅ Found by transaction:', statusData);
             }
         }
         
         if (!statusData && orderId) {
-            const data = await kv.get(`order:${orderId}`);
+            const data = await redis.get(`order:${orderId}`);
             if (data) {
-                statusData = typeof data === 'string' ? JSON.parse(data) : data;
-                console.log('✅ Found status by order ID:', statusData);
+                statusData = JSON.parse(data);
+                console.log('✅ Found by order:', statusData);
             }
         }
         
@@ -30,25 +31,17 @@ module.exports = async (req, res) => {
                 found: true,
                 status: statusData.status,
                 product: statusData.product,
-                timestamp: statusData.timestamp,
-                transaction_id: transactionId,
-                order_id: orderId
+                timestamp: statusData.timestamp
             });
         } else {
-            console.log('❌ No status found, returning pending');
+            console.log('❌ Not found');
             res.json({
                 found: false,
-                status: 'pending',
-                transaction_id: transactionId,
-                order_id: orderId
+                status: 'pending'
             });
         }
     } catch (error) {
-        console.error('❌ Error reading from KV:', error);
-        res.status(500).json({
-            found: false,
-            status: 'pending',
-            error: error.message
-        });
+        console.error('❌ Error:', error);
+        res.status(500).json({ error: error.message });
     }
 };
