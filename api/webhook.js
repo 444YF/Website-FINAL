@@ -2,8 +2,8 @@ const express = require('express');
 const Redis = require('ioredis');
 const app = express();
 
-// Use the REDIS_URL from environment
-const redis = new Redis(process.env.REDIS_URL || process.env.KV_URL);
+// Connect to Redis using the REDIS_URL environment variable
+const redis = new Redis(process.env.REDIS_URL);
 
 app.use(express.raw({ type: 'application/json' }));
 
@@ -30,7 +30,11 @@ app.post('/api/webhook', async (req, res) => {
             }
         }
         
-        console.log('📋 Transaction:', transactionId, 'Order:', orderId, 'Product:', product, 'Status:', status);
+        console.log('📋 Details:');
+        console.log('  Transaction:', transactionId);
+        console.log('  Order:', orderId);
+        console.log('  Product:', product);
+        console.log('  Status:', status);
         
         const statusData = {
             status: status,
@@ -41,7 +45,7 @@ app.post('/api/webhook', async (req, res) => {
             webhook_id: webhookId
         };
         
-        // Store in Redis with 24 hour expiry
+        // Store in Redis with 24 hour expiry (86400 seconds)
         if (transactionId) {
             await redis.setex(`transaction:${transactionId}`, 86400, JSON.stringify(statusData));
             console.log('✅ Stored transaction:', transactionId);
@@ -52,7 +56,14 @@ app.post('/api/webhook', async (req, res) => {
             console.log('✅ Stored order:', orderId);
         }
         
-        console.log('Status:', status);
+        // Log status
+        if (status === 'successful') {
+            console.log('✅ Status: SUCCESSFUL');
+        } else if (status === 'settled') {
+            console.log('💰 Status: SETTLED');
+        } else {
+            console.log('ℹ️ Status:', status);
+        }
         
         res.status(200).json({ 
             received: true,
@@ -64,8 +75,15 @@ app.post('/api/webhook', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Webhook error:', error);
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ error: error.message, received: false });
     }
+});
+
+app.get('/api/webhook', (req, res) => {
+    res.json({ 
+        status: 'ok',
+        message: 'Webhook endpoint ready'
+    });
 });
 
 module.exports = app;
