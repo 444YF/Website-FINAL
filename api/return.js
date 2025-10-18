@@ -207,8 +207,8 @@ module.exports = (req, res) => {
                 return statusLower === 'settled';
             }
             
-            // For other products (manutd, reading), accept "successful"
-            return statusLower === 'successful';
+            // For other products (manutd, reading), accept "success"
+            return statusLower === 'success';
         }
         
         async function checkStatus() {
@@ -241,7 +241,7 @@ module.exports = (req, res) => {
                     // For any other status - keep waiting
                     else {
                         console.log('⏳ Still waiting... Status:', status);
-                        const waitingFor = product === 'pbb_settled' ? 'SETTLED' : 'SUCCESSFUL';
+                        const waitingFor = product === 'pbb_settled' ? 'SETTLED' : 'SUCCESS';
                         document.getElementById('statusInfo').textContent = 'Product: ' + product.toUpperCase() + ' | Status: ' + status.toUpperCase() + ' | Waiting for ' + waitingFor + '... (Check #' + pollCount + ')';
                         return false;
                     }
