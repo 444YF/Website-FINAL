@@ -13,12 +13,35 @@
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #020202 0%, #0c1f0c 100%);
+      background: #000;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated neon grid behind products */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 200%;
+      height: 200%;
+      background-image: 
+        linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      z-index: 0;
+      pointer-events: none;
+      animation: moveGrid 60s linear infinite;
+    }
+
+    @keyframes moveGrid {
+      from { transform: translate(0, 0); }
+      to { transform: translate(-50px, -50px); }
     }
 
     /* Top Navigation */
@@ -90,14 +113,42 @@
       gap: 40px;
       max-width: 1300px;
       margin: 120px auto 60px auto;
+      position: relative;
+      z-index: 1;
     }
 
     .product {
       width: 350px;
       text-align: center;
-      padding: 20px;
-      border-radius: 16px;
       transition: all 0.4s ease;
+      position: relative;
+    }
+
+    /* Neon radial glow behind each product */
+    .product::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(0deg);
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(0, 255, 65, 0.15) 0%, transparent 70%);
+      z-index: -1;
+      transition: all 0.4s ease;
+      border-radius: 50%;
+      animation: rotateGlow 40s linear infinite;
+    }
+
+    .product:hover::before {
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, rgba(0, 255, 65, 0.25) 0%, transparent 70%);
+    }
+
+    @keyframes rotateGlow {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
     }
 
     /* Hover Glow + Lift */
@@ -123,6 +174,7 @@
       text-align: center;
     }
 
+    /* Buttons with pulsing glow */
     button {
       width: 250px;
       background: transparent;
@@ -138,6 +190,12 @@
       letter-spacing: 2px;
       position: relative;
       overflow: hidden;
+      animation: pulseGlow 2s infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 15px rgba(0, 255, 65, 0.5); }
+      100% { box-shadow: 0 0 30px rgba(0, 255, 65, 0.9); }
     }
 
     button:before {
@@ -158,7 +216,8 @@
 
     button:hover {
       color: #000;
-      box-shadow: 0 0 25px rgba(0, 255, 65, 0.8);
+      box-shadow: 0 0 35px rgba(0, 255, 65, 1);
+      animation: none; /* stops pulsing on hover to keep glow constant */
     }
 
     button:active {
